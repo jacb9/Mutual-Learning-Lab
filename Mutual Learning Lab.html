@@ -1,0 +1,440 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mutual Learning Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fourth lab in the series. Part 1 watches one organization (belief matrix + knowledge chart), Part 2 replicates March's figures via tabs, Part 3 is the competition-for-primacy calculator. Framing column beside working area; one column on phones. */
+:root{
+  --bg:#F4F3EF; --surface:#FFFFFF; --ink:#1F1D18; --muted:#605B50; --line:#DDD9CF; --soft:#EFEBDF;
+  --accent:#8A5A12;
+  --ok:#25607F; --bad:#D27A2C; --zero:#E8E4DA;
+  --s1:#25607F; --s2:#D27A2C; --s3:#7A4FA0; --s4:#5E7A20;
+  --f-display:"Newsreader", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#13120F; --surface:#1C1A16; --ink:#EDE9E0; --muted:#A8A192; --line:#34302A; --soft:#2A251C;
+  --accent:#E3B062;
+  --ok:#73B6DA; --bad:#F0A060; --zero:#2C2924;
+  --s1:#73B6DA; --s2:#F0A060; --s3:#BC98E0; --s4:#A9C760; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#13120F; --surface:#1C1A16; --ink:#EDE9E0; --muted:#A8A192; --line:#34302A; --soft:#2A251C;
+  --accent:#E3B062;
+  --ok:#73B6DA; --bad:#F0A060; --zero:#2C2924;
+  --s1:#73B6DA; --s2:#F0A060; --s3:#BC98E0; --s4:#A9C760; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:28px 8px}
+.cite{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(30px,4.4vw,44px);line-height:1.08;margin:6px 0 10px;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,2.6vw,27px);margin:0 0 8px;line-height:1.15;text-wrap:balance}
+h2 .n{font-family:var(--f-mono);font-size:14px;color:var(--accent);font-weight:500;display:block;margin-bottom:4px;letter-spacing:.04em}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px;font-weight:600}
+.lede{max-width:72ch;margin:0}
+p{max-width:68ch}
+.part{padding-block:30px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.frame p{font-size:14.5px;margin:0 0 12px}
+.look{background:var(--soft);border-radius:8px;padding:12px 14px;font-size:14px}
+.look b{font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+canvas{display:block;width:100%;touch-action:manipulation}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grow{flex:1;min-width:140px}
+.btn{font:600 14px var(--f-body);padding:8px 14px;border-radius:7px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label{font-size:13px;font-weight:500}
+.val{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{font:500 13px var(--f-body);padding:6px 11px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sq{width:11px;height:11px;border-radius:2px;display:inline-block}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;margin-bottom:12px}
+.watch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.watch{grid-template-columns:minmax(0,1fr)}}
+#mat{max-width:100%}
+#cKnow{height:230px;cursor:crosshair}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 14px;margin-top:10px}
+.stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.stat .v{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tab{font:500 13px var(--f-body);padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tab small{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-left:5px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tab[aria-selected="true"] small{color:var(--surface);opacity:.85}
+#cExp{height:300px}
+.progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--accent)}
+#cDens,#cEq{height:250px}
+#cEq{cursor:crosshair}
+.verdict{font-size:15px;padding:10px 12px;border-radius:7px;background:var(--soft)}
+.verdict b{font-family:var(--f-mono);font-weight:500}
+.fine{font-size:13px;color:var(--muted);max-width:95ch}
+footer{padding-block:10px 40px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="cite">March (1991) · “Exploration and Exploitation in Organizational Learning” · Organization Science 2(1): 71–87</div>
+  <h1>Mutual Learning Lab</h1>
+  <p class="lede">March’s argument is that adaptive processes refine exploitation faster than they sustain exploration, which makes them effective in the short run and self-destructive in the long run. He makes the case with two small models. In the first, individuals and an organizational code learn from each other, and fast learning turns out to undercut what the organization can know. In the second, firms compete for first place, and the variability of performance starts to matter more than its average.</p>
+</header>
+
+<!-- PART 1 -->
+<section class="part" style="border-top:0">
+  <div class="grid">
+    <div class="frame">
+      <h2><span class="n">Part 1</span>Watch an organization learn</h2>
+      <p>Reality has 30 dimensions, each 1 or −1. Fifty individuals start with random beliefs (1, 0 or −1 on each dimension), and the organizational code starts out neutral (0 everywhere).</p>
+      <p>Each period, individuals adopt the code’s view on a dimension with probability <b>p1</b>, the socialization rate. The code, in turn, adopts the majority view of the <b>superior group</b>, the individuals who currently know more than the code, with a probability that rises with <b>p2</b> and with how lopsided that majority is.</p>
+      <p>Neither side sees reality directly. Knowledge improves only when the code copies people who happen to be right.</p>
+      <div class="look"><b>What to look for.</b> Run fast socialization (p1 = 0.9) and then slow (p1 = 0.1). With fast socialization, the matrix turns uniform within a few periods and the code stops improving early, because nobody is left who differs from it. Slow learners keep their odd beliefs long enough for the code to learn from the ones who are right.</div>
+    </div>
+    <div class="panel">
+      <div class="row" style="margin-bottom:12px">
+        <div class="seg" role="group" aria-label="Scenario"><button data-sc="fast">Fast socialization</button><button data-sc="slow">Slow socialization</button><button data-sc="turb">Turbulence, no turnover</button><button data-sc="turbt">Turbulence + turnover</button></div>
+      </div>
+      <div class="sliders">
+        <div><label for="w1">p1, socialization <span class="val" id="w1v"></span></label><input type="range" id="w1" min="0.05" max="1" step="0.05"></div>
+        <div><label for="w2">p2, code learning <span class="val" id="w2v"></span></label><input type="range" id="w2" min="0.05" max="1" step="0.05"></div>
+        <div><label for="w3">p3, turnover <span class="val" id="w3v"></span></label><input type="range" id="w3" min="0" max="0.5" step="0.01"></div>
+        <div><label for="w4">p4, turbulence <span class="val" id="w4v"></span></label><input type="range" id="w4" min="0" max="0.1" step="0.005"></div>
+      </div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn" id="play">Play</button>
+        <span class="val" id="tLbl" style="min-width:9ch;font-size:14px">Period 0</span>
+        <input type="range" id="scrub" class="grow" min="0" max="60" value="0" aria-label="Period" style="flex:1">
+        <button class="btn ghost" id="newRun">New run</button>
+      </div>
+      <div class="watch">
+        <div>
+          <canvas id="mat" aria-label="Beliefs of reality, code and each individual across 30 dimensions"></canvas>
+          <div class="legend" style="margin-top:6px"><span><span class="sq" style="background:var(--ok)"></span>matches reality</span><span><span class="sq" style="background:var(--bad)"></span>contradicts it</span><span><span class="sq" style="background:var(--zero)"></span>neutral (0)</span><span><span class="sq" style="background:var(--accent)"></span>superior group</span></div>
+        </div>
+        <div>
+          <h3>Knowledge over time</h3>
+          <canvas id="cKnow" aria-label="Code knowledge and average individual knowledge over time"></canvas>
+          <div class="legend"><span><span class="sq" style="background:var(--s1)"></span>Code</span><span><span class="sq" style="background:var(--s2)"></span>Average individual</span><span><span class="sq" style="background:var(--s3);height:3px"></span>Diversity</span></div>
+          <div class="stats">
+            <div class="stat"><div class="k">Code</div><div class="v" id="kC">–</div></div>
+            <div class="stat"><div class="k">Individuals</div><div class="v" id="kI">–</div></div>
+            <div class="stat"><div class="k">Superior group</div><div class="v" id="kS">–</div></div>
+          </div>
+          <p class="hint" style="margin:8px 0 0">Knowledge is matches minus contradictions, divided by 30, so random beliefs score about 0 and perfect knowledge scores 1. Diversity is the average share of dimensions on which an individual disagrees with the code.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part">
+  <div class="grid">
+    <div class="frame">
+      <h2><span class="n">Part 2</span>Replicate March’s experiments</h2>
+      <p>Each tab reruns one of March’s figures: 80 organizations per point, as in the paper, each with m = 30 dimensions and n = 50 individuals.</p>
+      <div class="look" id="expNote"></div>
+    </div>
+    <div class="panel">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="row" style="justify-content:space-between;margin-bottom:6px">
+        <h3 style="margin:0" id="expTitle"></h3>
+        <div class="row"><select id="inR" aria-label="Organizations per point"><option value="40">40 per point</option><option value="80" selected>80 per point</option><option value="200">200 per point</option></select><button class="btn ghost" id="rerun">Rerun</button></div>
+      </div>
+      <div class="progress" id="prog" style="visibility:hidden;margin-bottom:6px"><div></div></div>
+      <div class="legend" id="expLegend"></div>
+      <canvas id="cExp" aria-label="Replicated figure"></canvas>
+      <p class="hint" id="expFoot" style="margin:6px 0 0"></p>
+    </div>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part">
+  <div class="grid">
+    <div class="frame">
+      <h2><span class="n">Part 3</span>Competition for primacy</h2>
+      <p>Your organization’s performance is a draw from a normal distribution with mean x′ and variance v′. It competes against N rivals whose performance is drawn from a standard normal (mean 0, variance 1). If everyone were identical, your chance of finishing first would be 1/(N + 1).</p>
+      <p>Learning that raises the mean usually also makes performance more reliable, lowering its variance. March asks when that trade is worth it.</p>
+      <div class="look"><b>What to look for.</b> With one rival, any gain in the mean helps and variance doesn’t matter. As N grows, the right-hand tail takes over: a lower mean with more variance can beat a higher mean with less, and a learning process that improves the average while cutting variability can lower the chance of coming first. Drag the point in the right-hand chart across the line for your N.</div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <div class="sliders">
+          <div><label for="cN">N, number of rivals <span class="val" id="cNv"></span></label><input type="range" id="cN" min="1" max="100" step="1" value="10"></div>
+          <div><label for="cX">x′, your mean <span class="val" id="cXv"></span></label><input type="range" id="cX" min="-1" max="2" step="0.05" value="0.3"></div>
+          <div><label for="cV">v′, your variance <span class="val" id="cVv"></span></label><input type="range" id="cV" min="0.05" max="2" step="0.05" value="0.5"></div>
+        </div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+      <div class="watch">
+        <div class="panel"><h3>Your distribution against the best rival</h3><canvas id="cDens" aria-label="Your performance distribution and the distribution of the best rival's performance"></canvas>
+          <div class="legend"><span><span class="sq" style="background:var(--s1)"></span>You, N(x′, v′)</span><span><span class="sq" style="background:var(--s2)"></span>Best of N rivals</span></div></div>
+        <div class="panel"><h3>Competitive equality lines (Figure 6)</h3><canvas id="cEq" aria-label="Mean and variance combinations that give exactly a 1 in N+1 chance of primacy"></canvas>
+          <div class="legend" id="eqLegend"></div>
+          <p class="hint" style="margin:6px 0 0">Points above a line beat the 1/(N + 1) odds; points below fall short. Click to place your organization.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="fine"><b>How this version follows the paper, and where it departs.</b> Parameters follow the paper: m = 30, n = 50, 80 organizations per point, equilibrium where neither individuals nor the code can change any further, and period-20 snapshots where the paper uses them. Code learning follows March’s footnote: when the superior group’s majority view on a dimension differs from the code, the code adopts it with probability 1 − (1 − p2)<sup>k</sup>, where k is the number of superior individuals holding the majority view minus the number who agree with the code. The paper calls knowledge “the proportion of reality correctly represented,” but also says random initial beliefs carry no knowledge and shows knowledge decaying to zero under turbulence, which only fits a matches-minus-contradictions measure. This lab uses that measure throughout, including to decide who is superior to the code. With it, Figures 1, 2, 4 and 5 come out with March’s shapes and close to his levels. One result does not: in Figure 3, period-20 code knowledge rises slightly as the share of fast learners grows, where March shows a slight decline, while the fast, slow and average-individual lines match. Individuals and the code update simultaneously from the previous period’s beliefs, and a departing individual’s replacement keeps the same learning rate. Figure 6 is computed by numerical integration rather than the paper’s 5,000-draw simulations, so its lines are smooth.</p>
+</footer>
+</div>
+
+<script>
+// ---- March (1991) mutual learning model ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+// Knowledge on a dimension: +1 if the belief matches reality, -1 if it contradicts it, 0 if neutral.
+// A belief set's knowledge is the average over dimensions, so random beliefs score about 0.
+const SC=(b,r)=>b===0?0:b===r?1:-1, KM=SC;
+// opts: m, n, p1 (number) or p1s (array per individual), p2, p3 (turnover), p4 (turbulence)
+function makeOrg(o,rng){
+  const m=o.m||30,n=o.n||50,R=new Int8Array(m),code=new Int8Array(m),B=new Int8Array(n*m),p1=new Float64Array(n);
+  for(let d=0;d<m;d++) R[d]=rng()<.5?1:-1;
+  for(let k=0;k<n*m;k++) B[k]=Math.floor(rng()*3)-1;
+  for(let i=0;i<n;i++) p1[i]=o.p1s?o.p1s[i]:o.p1;
+  return {m,n,R,code,B,p1,p2:o.p2,p3:o.p3||0,p4:o.p4||0,t:0,stable:false};
+}
+function knowCode(g){let c=0;for(let d=0;d<g.m;d++) c+=KM(g.code[d],g.R[d]);return c/g.m}
+function knowInd(g,i){let c=0;const o=i*g.m;for(let d=0;d<g.m;d++) c+=KM(g.B[o+d],g.R[d]);return c/g.m}
+function stepOrg(g,rng){
+  const {m,n,R,code,B}=g;
+  // superior group: individuals whose knowledge exceeds the code's
+  let kc=0;for(let d=0;d<m;d++) kc+=SC(code[d],R[d]);
+  const sup=[];for(let i=0;i<n;i++){let k=0;const o=i*m;for(let d=0;d<m;d++) k+=SC(B[o+d],R[d]);if(k>kc) sup.push(i)}
+  let possible=0;
+  // code learns from the superior group (computed from start-of-period beliefs)
+  const newCode=Int8Array.from(code);
+  if(sup.length){
+    for(let d=0;d<m;d++){
+      let pos=0,neg=0,zero=0;for(const i of sup){const b=B[i*m+d];if(b>0)pos++;else if(b<0)neg++;else zero++}
+      const maj=pos>neg?1:neg>pos?-1:0;
+      if(maj!==0&&maj!==code[d]){
+        const differ=maj>0?pos:neg,agree=code[d]>0?pos:code[d]<0?neg:zero,k=differ-agree;
+        if(k>0){possible++;if(rng()<1-Math.pow(1-g.p2,k)) newCode[d]=maj}
+      }
+    }
+  }
+  // individuals learn from the code
+  for(let i=0;i<n;i++){const o=i*m,p=g.p1[i];for(let d=0;d<m;d++){const c=code[d];if(c!==0&&B[o+d]!==c){possible++;if(rng()<p) B[o+d]=c}}}
+  code.set(newCode);
+  // turnover: replaced by a naive recruit (same learning-rate slot)
+  if(g.p3>0) for(let i=0;i<n;i++) if(rng()<g.p3){const o=i*m;for(let d=0;d<m;d++) B[o+d]=Math.floor(rng()*3)-1}
+  // turbulence: reality shifts
+  if(g.p4>0) for(let d=0;d<m;d++) if(rng()<g.p4) R[d]=-R[d];
+  g.t++;
+  g.stable=possible===0&&g.p3===0&&g.p4===0;
+  return g;
+}
+function runToEquilibrium(o,rng,cap){const g=makeOrg(o,rng);cap=cap||5000;while(!g.stable&&g.t<cap) stepOrg(g,rng);return g}
+function avgInd(g,filter){let s=0,c=0;for(let i=0;i<g.n;i++) if(!filter||filter(i)){s+=knowInd(g,i);c++}return c?s/c:NaN}
+
+// ---- Competition for primacy (normal performance distributions) ----
+function phi(x){return Math.exp(-x*x/2)/Math.sqrt(2*Math.PI)}
+function Phi(x){ // Abramowitz-Stegun 7.1.26 via erf
+  const s=x<0?-1:1,z=Math.abs(x)/Math.SQRT2,t=1/(1+0.3275911*z);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z);return .5*(1+s*y)}
+// probability that X ~ N(x, v) beats the maximum of N independent N(0,1)
+function pStar(x,v,N){const sd=Math.sqrt(v),lo=Math.min(-8,x-8*sd),hi=Math.max(8,x+8*sd),K=1200,h=(hi-lo)/K;let s=0;
+  for(let k=0;k<=K;k++){const z=lo+k*h,w=(k===0||k===K)?.5:1;s+=w*phi((z-x)/sd)/sd*Math.pow(Phi(z),N)}return s*h}
+// mean x' at which the (x',v') organization has exactly a 1/(N+1) chance of primacy
+function equalityMean(v,N){const target=1/(N+1);let a=-6,b=6;for(let it=0;it<50;it++){const c=(a+b)/2;if(pStar(c,v,N)<target) a=c;else b=c}return (a+b)/2}
+
+</script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+let TH={};
+function readTheme(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();
+  TH={ink:g("--ink"),muted:g("--muted"),line:g("--line"),surface:g("--surface"),accent:g("--accent"),ok:g("--ok"),bad:g("--bad"),zero:g("--zero"),s:[g("--s1"),g("--s2"),g("--s3"),g("--s4")]}}
+function setup(cv){const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);ctx.font="11px 'IBM Plex Mono', ui-monospace, monospace";return{ctx,w,h}}
+function nice(range,target){const raw=range/target,p=10**Math.floor(Math.log10(raw)),n=raw/p;return(n<1.5?1:n<3?2:n<7?5:10)*p}
+function axes(ctx,w,h,pad,x0,x1,y0,y1,fx,fy,xlab){
+  const pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,X=v=>pad.l+(v-x0)/(x1-x0)*pw,Y=v=>pad.t+ph-(v-y0)/(y1-y0)*ph;
+  ctx.lineWidth=1;ctx.textAlign="right";ctx.textBaseline="middle";const ys=nice(y1-y0,5);
+  for(let v=Math.ceil(y0/ys-1e-9)*ys;v<=y1+1e-9;v+=ys){ctx.strokeStyle=TH.line;ctx.beginPath();ctx.moveTo(pad.l,Math.round(Y(v))+.5);ctx.lineTo(w-pad.r,Math.round(Y(v))+.5);ctx.stroke();ctx.fillStyle=TH.muted;ctx.fillText(fy(v),pad.l-6,Y(v))}
+  ctx.textAlign="center";ctx.textBaseline="top";const xs=nice(x1-x0,w<420?4:7);
+  for(let v=Math.ceil(x0/xs-1e-9)*xs;v<=x1+1e-9;v+=xs){ctx.fillStyle=TH.muted;ctx.fillText(fx(v),X(v),pad.t+ph+6)}
+  if(xlab){ctx.textAlign="right";ctx.fillText(xlab,w-pad.r,pad.t+ph+20)}
+  return{X,Y,pw,ph}}
+function line(ctx,pts,X,Y,col,wd,dash){ctx.strokeStyle=col;ctx.lineWidth=wd||2;ctx.setLineDash(dash||[]);ctx.beginPath();pts.forEach((p,i)=>{i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))});ctx.stroke();ctx.setLineDash([])}
+
+/* ---------- Part 1: one organization ---------- */
+const SC_=[["fast",{p1:.9,p2:.5,p3:0,p4:0}],["slow",{p1:.1,p2:.5,p3:0,p4:0}],["turb",{p1:.5,p2:.5,p3:0,p4:.02}],["turbt",{p1:.5,p2:.5,p3:.1,p4:.02}]];
+const W={p:{p1:.9,p2:.5,p3:0,p4:0},seed:1991,hist:null,t:0,timer:null};
+function runWatch(){
+  const rng=mulberry32(W.seed),g=makeOrg(W.p,rng),T=(W.p.p3>0||W.p.p4>0)?100:400;
+  const H={B:[],code:[],R:[],sup:[],kc:[],ki:[],div:[]};
+  const snap=()=>{H.B.push(Int8Array.from(g.B));H.code.push(Int8Array.from(g.code));H.R.push(Int8Array.from(g.R));
+    let kc=0;for(let d=0;d<g.m;d++) kc+=SC(g.code[d],g.R[d]);const sup=new Uint8Array(g.n);let s=0,dv=0;
+    for(let i=0;i<g.n;i++){let k=0,df=0;const o=i*g.m;for(let d=0;d<g.m;d++){k+=SC(g.B[o+d],g.R[d]);if(g.B[o+d]!==g.code[d]) df++}if(k>kc) sup[i]=1;s+=k;dv+=df/g.m}
+    H.sup.push(sup);H.kc.push(kc/g.m);H.ki.push(s/g.n/g.m);H.div.push(dv/g.n)};
+  snap();
+  while(g.t<T){stepOrg(g,rng);snap();if(g.stable){for(let k=0;k<5;k++) snap();break}}
+  W.hist=H;W.T=H.kc.length-1;$("#scrub").max=W.T;W.t=Math.min(W.t,W.T);
+}
+function drawMatrix(){
+  const H=W.hist,t=W.t,cv=$("#mat"),m=30,n=50,w=cv.clientWidth,cell=Math.max(4,Math.floor((w-18)/m)),gap=cell>6?1:0,lab=18,
+    hh=cell*(n+2)+10+cell;cv.style.height=hh+"px";const {ctx}=setup(cv);
+  const col=(b,r)=>b===0?TH.zero:b===r?TH.ok:TH.bad,R=H.R[t],code=H.code[t],B=H.B[t],sup=H.sup[t];
+  ctx.fillStyle=TH.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.font="10px 'IBM Plex Mono', monospace";
+  // reality row
+  for(let d=0;d<m;d++){ctx.fillStyle=R[d]>0?TH.ink:TH.surface;ctx.fillRect(lab+d*cell,0,cell-gap,cell-gap);ctx.strokeStyle=TH.ink;ctx.lineWidth=.6;ctx.strokeRect(lab+d*cell+.3,.3,cell-gap-.6,cell-gap-.6)}
+  ctx.fillStyle=TH.muted;ctx.fillText("R",lab-4,cell/2);
+  const yc=cell+4;for(let d=0;d<m;d++){ctx.fillStyle=col(code[d],R[d]);ctx.fillRect(lab+d*cell,yc,cell-gap,cell-gap)}
+  ctx.fillStyle=TH.muted;ctx.fillText("C",lab-4,yc+cell/2);
+  const y0=yc+cell+6;
+  for(let i=0;i<n;i++){const y=y0+i*cell;if(sup[i]){ctx.fillStyle=TH.accent;ctx.fillRect(lab-7,y+1,4,cell-gap-2)}
+    for(let d=0;d<m;d++){ctx.fillStyle=col(B[i*m+d],R[d]);ctx.fillRect(lab+d*cell,y,cell-gap,cell-gap)}}
+}
+function drawKnow(){
+  const H=W.hist,{ctx,w,h}=setup($("#cKnow")),pad={l:40,r:10,t:10,b:26},T=Math.max(10,W.T);
+  let lo=Math.min(0,...H.kc,...H.ki);lo=Math.floor(lo*10)/10;
+  const {X,Y}=axes(ctx,w,h,pad,0,T,lo,1,v=>String(Math.round(v)),v=>v.toFixed(1),"period →");
+  line(ctx,H.div.map((v,i)=>[i,v]),X,Y,TH.s[2],1.5,[4,3]);
+  line(ctx,H.ki.map((v,i)=>[i,v]),X,Y,TH.s[1],2);line(ctx,H.kc.map((v,i)=>[i,v]),X,Y,TH.s[0],2.4);
+  const cx=Math.round(X(W.t))+.5;ctx.strokeStyle=TH.ink;ctx.globalAlpha=.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,h-pad.b);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+  $("#kC").textContent=H.kc[W.t].toFixed(2);$("#kI").textContent=H.ki[W.t].toFixed(2);$("#kS").textContent=H.sup[W.t].reduce((a,b)=>a+b,0)+" of 50";
+  $("#tLbl").textContent="Period "+W.t+(W.t===W.T&&W.p.p3===0&&W.p.p4===0?" · stable":"");$("#scrub").value=W.t;
+}
+function watchFrame(){drawMatrix();drawKnow()}
+function syncSliders(){[["w1","p1"],["w2","p2"],["w3","p3"],["w4","p4"]].forEach(([id,k])=>{$("#"+id).value=W.p[k];$("#"+id+"v").textContent="= "+W.p[k]});
+  document.querySelectorAll("[data-sc]").forEach(b=>{const p=SC_.find(s=>s[0]===b.dataset.sc)[1];b.setAttribute("aria-pressed",Object.keys(p).every(k=>Math.abs(p[k]-W.p[k])<1e-9))})}
+function stop(){if(W.timer){clearInterval(W.timer);W.timer=null}$("#play").textContent="Play"}
+function play(){if(W.timer){stop();return}if(W.t>=W.T) W.t=0;$("#play").textContent="Pause";W.timer=setInterval(()=>{if(W.t>=W.T){stop();return}W.t++;watchFrame()},W.T>150?60:160)}
+function rewatch(resetT){stop();runWatch();if(resetT) W.t=0;syncSliders();watchFrame()}
+
+/* ---------- Part 2: experiments ---------- */
+const RNGS=(a,b)=>mulberry32((a*7919+b*104729+1991)>>>0);
+const EXPS=[
+ {id:"f1",tab:"Learning rates",fig:"Fig. 1",title:"Equilibrium code knowledge by socialization rate",xl:"socialization rate p1",
+  series:[{name:"p2 = 0.1"},{name:"p2 = 0.5"},{name:"p2 = 0.9"}],xs:[.1,.2,.3,.4,.5,.6,.7,.8,.9],
+  point:(x,si,r)=>knowCode(runToEquilibrium({p1:x,p2:[.1,.5,.9][si]},RNGS(r,Math.round(x*100)+si*1000))),
+  note:"<b>What to look for.</b> Slower socialization (low p1) produces more knowledge at equilibrium, especially when the code learns fast (high p2). In March’s words, the best case by far is a code that learns rapidly from individuals who are socialized slowly.",
+  foot:"Equilibrium: the point at which neither individuals nor the code can change any further."},
+ {id:"f2",tab:"Mixed learners",fig:"Fig. 2",title:"Equilibrium code knowledge: a mix of fast and slow learners vs. everyone at the average rate",xl:"average socialization rate p1",
+  series:[{name:"Mix of p1 = 0.1 and 0.9"},{name:"Everyone at the average"}],xs:[.2,.3,.4,.5,.6,.7,.8],
+  point:(x,si,r)=>{if(si===1) return knowCode(runToEquilibrium({p1:x,p2:.5},RNGS(r,Math.round(x*100)+500)));const nf=Math.round(50*(x-.1)/.8);return knowCode(runToEquilibrium({p1s:Array.from({length:50},(_,i)=>i<nf?.9:.1),p2:.5},RNGS(r,Math.round(x*100))))},
+  note:"<b>What to look for.</b> For any average rate of learning from the code, a population that mixes fast and slow learners reaches more knowledge than one where everyone learns at that average rate. The slow learners preserve the variety the code needs.",
+  foot:"p2 = 0.5. The mix varies the share of fast learners to hit each average."},
+ {id:"f3",tab:"Who gains",fig:"Fig. 3",title:"Knowledge at period 20 by share of fast learners",xl:"share of individuals with p1 = 0.9",
+  series:[{name:"Code"},{name:"Fast learners"},{name:"Average individual"},{name:"Slow learners"}],xs:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1],multi:true,
+  point:(x,si,r)=>{const nf=Math.round(50*x),rng=RNGS(r,Math.round(x*100)+3000),g=makeOrg({p1s:Array.from({length:50},(_,i)=>i<nf?.9:.1),p2:.5},rng);for(let t=0;t<20;t++) stepOrg(g,rng);
+    return [knowCode(g),nf?avgInd(g,i=>i<nf):NaN,avgInd(g),nf<50?avgInd(g,i=>i>=nf):NaN]},
+  note:"<b>What to look for.</b> Before equilibrium, fast learners gain from working alongside slow ones, but slow learners gain little from having fast colleagues. The benefits of variety are produced by the slow learners and collected by the fast ones, which makes the right share of slow learners hard to sustain if people choose their own learning speed.",
+  foot:"p2 = 0.5. In March’s figure the code line drifts slightly down as fast learners are added; here it drifts slightly up."},
+ {id:"f4",tab:"Turnover",fig:"Fig. 4",title:"Code knowledge at period 20 by turnover rate",xl:"turnover p3",
+  series:[{name:"p1 = 0.1 (slow)"},{name:"p1 = 0.9 (fast)"}],xs:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1],
+  point:(x,si,r)=>{const rng=RNGS(r,Math.round(x*100)+si*1000+4000),g=makeOrg({p1:[.1,.9][si],p2:.5,p3:x},rng);for(let t=0;t<20;t++) stepOrg(g,rng);return knowCode(g)},
+  note:"<b>What to look for.</b> With slow socialization, turnover only hurts. With fast socialization, moderate turnover improves the code: newcomers know less than the people they replace on average, but what they know is less redundant with the code, and occasionally better.",
+  foot:"p2 = 0.5. Each period every individual leaves with probability p3 and is replaced by a recruit with random beliefs."},
+ {id:"f5",tab:"Turbulence",fig:"Fig. 5",title:"Code knowledge over time when reality keeps shifting (p4 = 0.02)",xl:"period",
+  series:[{name:"With turnover (p3 = 0.1)"},{name:"Without turnover (p3 = 0)"}],xs:null,time:true,
+  note:"<b>What to look for.</b> When reality shifts, a closed organization first learns and then decays: once the code and its members agree, nothing new enters, and knowledge drifts down to chance (zero on this scale). Moderate turnover keeps a steady supply of differing beliefs and holds knowledge up.",
+  foot:"p1 = p2 = 0.5. Each period every dimension of reality flips with probability p4."}
+];
+const E={cur:"f1",R:80,data:{},job:0};
+function renderTabs(){$("#tabs").innerHTML=EXPS.map(e=>`<button class="tab" role="tab" data-e="${e.id}" aria-selected="${e.id===E.cur}">${e.tab}<small>${e.fig}</small></button>`).join("")}
+async function runExp(id){
+  const e=EXPS.find(x=>x.id===id),job=++E.job,R=E.R,bar=$("#prog").firstElementChild;$("#prog").style.visibility="visible";bar.style.width="0%";
+  let out;
+  if(e.time){out=[0,1].map(()=>new Float64Array(101));for(let r=0;r<R;r++){[.1,0].forEach((p3,si)=>{const rng=RNGS(r,si+5000),g=makeOrg({p1:.5,p2:.5,p3,p4:.02},rng);out[si][0]+=knowCode(g)/R;for(let t=1;t<=100;t++){stepOrg(g,rng);out[si][t]+=knowCode(g)/R}});
+      if(r%10===9){bar.style.width=(r+1)/R*100+"%";await new Promise(z=>setTimeout(z,0));if(job!==E.job) return}}
+    out=out.map(a=>Array.from(a,(v,t)=>[t,v]))}
+  else{const ns=e.series.length;const acc=e.series.map(()=>e.xs.map(()=>[0,0]));let done=0;const total=e.xs.length*(e.multi?1:ns);
+    for(let xi=0;xi<e.xs.length;xi++){
+      for(let si=0;si<(e.multi?1:ns);si++){for(let r=0;r<R;r++){const v=e.point(e.xs[xi],si,r);
+          if(e.multi) v.forEach((u,k)=>{if(isFinite(u)){acc[k][xi][0]+=u;acc[k][xi][1]++}});else{acc[si][xi][0]+=v;acc[si][xi][1]++}}
+        done++;bar.style.width=done/total*100+"%";await new Promise(z=>setTimeout(z,0));if(job!==E.job) return}}
+    out=acc.map(s=>s.map((a,xi)=>[e.xs[xi],a[1]?a[0]/a[1]:NaN]))}
+  E.data[id+"|"+R]=out;$("#prog").style.visibility="hidden";if(E.cur===id) drawExp();
+}
+function drawExp(){
+  const e=EXPS.find(x=>x.id===E.cur),d=E.data[e.id+"|"+E.R];
+  $("#expTitle").textContent=e.title;$("#expNote").innerHTML=e.note;$("#expFoot").textContent=e.foot+` Each point averages ${E.R} organizations.`;
+  $("#expLegend").innerHTML=e.series.map((s,k)=>`<span><span class="sq" style="background:var(--s${k+1})"></span>${s.name}</span>`).join("");
+  const cv=$("#cExp");if(!d){const {ctx,w,h}=setup(cv);ctx.fillStyle=TH.muted;ctx.textAlign="center";ctx.fillText("Computing…",w/2,h/2);return}
+  const {ctx,w,h}=setup(cv),pad={l:42,r:12,t:12,b:34};let ys=[];d.forEach(s=>s.forEach(p=>{if(isFinite(p[1])) ys.push(p[1])}));
+  let y0=Math.min(...ys),y1=Math.max(...ys);const pd=Math.max(.03,(y1-y0)*.12);y0=Math.floor((y0-pd)*20)/20;y1=Math.min(1,Math.ceil((y1+pd)*20)/20);
+  const x0=e.time?0:e.xs[0],x1=e.time?100:e.xs[e.xs.length-1];
+  const {X,Y}=axes(ctx,w,h,pad,x0,x1,y0,y1,v=>e.time?String(Math.round(v)):(+v.toFixed(2)).toString(),v=>v.toFixed(2),e.xl+" →");
+  d.forEach((s,k)=>{const pts=s.filter(p=>isFinite(p[1]));line(ctx,pts,X,Y,TH.s[k],2.2,k===1&&!e.time&&e.id!=="f3"?[6,3]:[]);
+    if(!e.time){ctx.fillStyle=TH.s[k];ctx.strokeStyle=TH.surface;ctx.lineWidth=1.5;pts.forEach(p=>{ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),3.5,0,7);ctx.fill();ctx.stroke()})}});
+}
+function selectExp(id){E.cur=id;renderTabs();drawExp();if(!E.data[id+"|"+E.R]) runExp(id)}
+
+/* ---------- Part 3: competition ---------- */
+const C3={N:10,x:.3,v:.5};
+function maxPdf(z,N){return N*phi(z)*Math.pow(Phi(z),N-1)}
+function drawComp(){
+  const {N,x,v}=C3,ps=pStar(x,v,N),base=1/(N+1);
+  $("#cNv").textContent="= "+N;$("#cXv").textContent="= "+x.toFixed(2);$("#cVv").textContent="= "+v.toFixed(2);
+  const ratio=ps/base;
+  $("#verdict").innerHTML=`Chance you finish first: <b>${(ps*100).toFixed(1)}%</b>, against <b>${(base*100).toFixed(1)}%</b> for an organization identical to its rivals. That is ${ratio>=1.02?`an advantage (${ratio.toFixed(2)}× the baseline odds)`:ratio<=.98?`a disadvantage (${ratio.toFixed(2)}× the baseline odds)`:"about the same as the baseline"}.`;
+  // densities
+  {const {ctx,w,h}=setup($("#cDens")),pad={l:12,r:12,t:10,b:24},sd=Math.sqrt(v),lo=Math.min(-3,x-3.5*sd),hi=Math.max(3.5,x+3.5*sd);
+   const A=[],B=[];let ym=0;for(let k=0;k<=300;k++){const z=lo+(hi-lo)*k/300,a=phi((z-x)/sd)/sd,b=maxPdf(z,N);A.push([z,a]);B.push([z,b]);ym=Math.max(ym,a,b)}
+   const pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,X=z=>pad.l+(z-lo)/(hi-lo)*pw,Y=y=>pad.t+ph-y/ym/1.08*ph;
+   ctx.strokeStyle=TH.line;ctx.beginPath();ctx.moveTo(pad.l,pad.t+ph+.5);ctx.lineTo(w-pad.r,pad.t+ph+.5);ctx.stroke();
+   ctx.fillStyle=TH.muted;ctx.textAlign="center";ctx.textBaseline="top";for(let t=Math.ceil(lo);t<=hi;t++) ctx.fillText(String(t),X(t),pad.t+ph+5);
+   [[B,TH.s[1]],[A,TH.s[0]]].forEach(([P,c])=>{ctx.globalAlpha=.16;ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(X(P[0][0]),Y(0));P.forEach(p=>ctx.lineTo(X(p[0]),Y(p[1])));ctx.lineTo(X(P[P.length-1][0]),Y(0));ctx.fill();ctx.globalAlpha=1;line(ctx,P,X,Y,c,2)})}
+  // equality lines
+  {const cv=$("#cEq"),{ctx,w,h}=setup(cv),pad={l:40,r:12,t:10,b:34};
+   const Ns=[...new Set([2,10,100,N])].sort((a,b)=>a-b);const curves=Ns.map(n=>{const pts=[];for(let vv=.05;vv<=2.0001;vv+=.05) pts.push([vv,equalityMean(vv,n)]);return{n,pts}});
+   const {X,Y}=axes(ctx,w,h,pad,0,2,-1,2,v=>v.toFixed(1),v=>v.toFixed(1),"variance v′ →");
+   ctx.strokeStyle=TH.muted;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X(1)+.5,pad.t);ctx.lineTo(X(1)+.5,h-pad.b);ctx.moveTo(pad.l,Math.round(Y(0))+.5);ctx.lineTo(w-pad.r,Math.round(Y(0))+.5);ctx.stroke();ctx.globalAlpha=1;
+   const mine=curves.find(c=>c.n===N);
+   ctx.globalAlpha=.12;ctx.fillStyle=TH.s[0];ctx.beginPath();ctx.moveTo(X(mine.pts[0][0]),Y(2));mine.pts.forEach(p=>ctx.lineTo(X(p[0]),Y(Math.max(-1,Math.min(2,p[1])))));ctx.lineTo(X(2),Y(2));ctx.fill();ctx.globalAlpha=1;
+   curves.forEach(c=>{const isMine=c.n===N;line(ctx,c.pts.map(p=>[p[0],Math.max(-1,Math.min(2,p[1]))]),X,Y,isMine?TH.ink:TH.muted,isMine?2.4:1.2,isMine?[]:[4,3]);
+     const lp=c.pts[2];ctx.fillStyle=isMine?TH.ink:TH.muted;ctx.textAlign="left";ctx.textBaseline="bottom";ctx.fillText("N="+c.n,X(lp[0])+4,Y(Math.min(1.95,lp[1]))-2)});
+   ctx.fillStyle=TH.accent;ctx.strokeStyle=TH.surface;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(v),Y(x),6,0,7);ctx.fill();ctx.stroke();
+   $("#eqLegend").innerHTML=`<span><span class="sq" style="background:var(--ink);height:3px"></span>N = ${N} (yours, shaded side = advantage)</span><span><span class="sq" style="background:var(--muted);height:2px"></span>N = 2, 10, 100</span><span><span class="sq" style="background:var(--accent);border-radius:50%"></span>your organization</span>`;
+   cv._map={X,Y,pad,w,h}}
+}
+$("#cEq").addEventListener("click",e=>{const cv=$("#cEq"),r=cv.getBoundingClientRect(),m=cv._map;if(!m) return;const pw=m.w-m.pad.l-m.pad.r,ph=m.h-m.pad.t-m.pad.b;
+  const vv=(e.clientX-r.left-m.pad.l)/pw*2,xx=2-(e.clientY-r.top-m.pad.t)/ph*3;C3.v=Math.max(.05,Math.min(2,Math.round(vv/.05)*.05));C3.x=Math.max(-1,Math.min(2,Math.round(xx/.05)*.05));
+  $("#cV").value=C3.v;$("#cX").value=C3.x;drawComp()});
+[["cN","N"],["cX","x"],["cV","v"]].forEach(([id,k])=>$("#"+id).addEventListener("input",e=>{C3[k]=+e.target.value;drawComp()}));
+
+/* ---------- events ---------- */
+document.querySelectorAll("[data-sc]").forEach(b=>b.addEventListener("click",()=>{W.p=Object.assign({},SC_.find(s=>s[0]===b.dataset.sc)[1]);rewatch(true)}));
+[["w1","p1"],["w2","p2"],["w3","p3"],["w4","p4"]].forEach(([id,k])=>{$("#"+id).addEventListener("input",e=>{W.p[k]=+e.target.value;$("#"+id+"v").textContent="= "+W.p[k]});$("#"+id).addEventListener("change",()=>rewatch(true))});
+$("#play").addEventListener("click",play);
+$("#scrub").addEventListener("input",e=>{stop();W.t=+e.target.value;watchFrame()});
+$("#newRun").addEventListener("click",()=>{W.seed=Math.floor(Math.random()*1e9);rewatch(true)});
+const kc=$("#cKnow");kc.addEventListener("pointerdown",e=>{const r=kc.getBoundingClientRect();W.t=Math.max(0,Math.min(W.T,Math.round((e.clientX-r.left-40)/(r.width-50)*Math.max(10,W.T))));stop();watchFrame()});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-e]");if(b) selectExp(b.dataset.e)});
+$("#inR").addEventListener("change",e=>{E.R=+e.target.value;drawExp();if(!E.data[E.cur+"|"+E.R]) runExp(E.cur)});
+$("#rerun").addEventListener("click",()=>{delete E.data[E.cur+"|"+E.R];drawExp();runExp(E.cur)});
+function redraw(){watchFrame();drawExp();drawComp()}
+let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(redraw,80)}).observe(document.body);
+const reTheme=()=>{readTheme();redraw()};
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",reTheme)}catch(e){}
+new MutationObserver(reTheme).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- boot ---------- */
+readTheme();runWatch();W.t=Math.min(12,W.T);syncSliders();watchFrame();renderTabs();drawExp();runExp("f1");drawComp();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(redraw);
+})();
+</script>
+
+</body></html>
